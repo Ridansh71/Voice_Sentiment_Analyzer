@@ -1,0 +1,46 @@
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import speech_recognition as sr
+import streamlit as st
+
+# Function to perform sentiment analysis on recorded audio
+def perform_sentiment_analysis(recorded_audio):
+    try:
+        recognizer = sr.Recognizer()
+        text = recognizer.recognize_google(recorded_audio, language='en-US')
+        analyzer = SentimentIntensityAnalyzer()
+        Sentence = [str(text)]
+        for i in Sentence:
+            sentiment_score = analyzer.polarity_scores(text)
+        return text, sentiment_score
+    except Exception as ex:
+        return None, None
+
+def main():
+    
+    st.title('Voice Analyzer')
+
+    recognizer = sr.Recognizer()
+
+    if st.button("Start Recording"):
+        with st.spinner("Recording..."):
+            with sr.Microphone() as source:
+                recognizer.adjust_for_ambient_noise(source, duration=2)
+                recorded_audio = recognizer.listen(source)
+            st.success('Message recorded!')
+
+        # Perform sentiment analysis after recording
+        transcribed_text, sentiment_score = perform_sentiment_analysis(recorded_audio)
+
+        # Display results
+        if transcribed_text is not None and sentiment_score is not None:
+            st.write("### Transcribed Text")
+            st.write(transcribed_text)
+
+            st.write("### Sentiment Score")
+            st.write(sentiment_score)
+        else:
+
+            st.error("Error occurred during transcription or sentiment analysis.")
+
+if __name__ == "__main__":
+    main()
