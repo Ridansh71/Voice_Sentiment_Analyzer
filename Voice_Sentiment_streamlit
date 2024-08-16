@@ -8,39 +8,56 @@ def perform_sentiment_analysis(recorded_audio):
         recognizer = sr.Recognizer()
         text = recognizer.recognize_google(recorded_audio, language='en-US')
         analyzer = SentimentIntensityAnalyzer()
-        Sentence = [str(text)]
-        for i in Sentence:
-            sentiment_score = analyzer.polarity_scores(text)
+        sentiment_score = analyzer.polarity_scores(text)
         return text, sentiment_score
     except Exception as ex:
         return None, None
 
 def main():
-    
     st.title('Voice Analyzer')
 
+    # Initialize the recognizer
     recognizer = sr.Recognizer()
 
+    # Check session state to manage recording status
+    if "recording" not in st.session_state:
+        st.session_state.recording = False
+
+    # Start Recording button
     if st.button("Start Recording"):
-        with st.spinner("Recording..."):
-            with sr.Microphone() as source:
-                recognizer.adjust_for_ambient_noise(source, duration=2)
-                recorded_audio = recognizer.listen(source)
-            st.success('Message recorded!')
+        st.session_state.recording = True
+        st.session_state.recorded_audio = None
+
+    # Stop Recording button
+    if st.button("Stop Recording"):
+        st.session_state.recording = False
+
+    # Handle the recording process
+    if st.session_state.recording:
+        with sr.Microphone() as source:
+            st.info("Recording... Speak now.")
+            recognizer.adjust_for_ambient_noise(source, duration=2)
+            recorded_audio = recognizer.listen(source)
+
+            # Store recorded audio in session state
+            st.session_state.recorded_audio = recorded_audio
+            st.session_state.recording = False
+
+        st.success('Recording stopped!')
 
         # Perform sentiment analysis after recording
-        transcribed_text, sentiment_score = perform_sentiment_analysis(recorded_audio)
+        if st.session_state.recorded_audio:
+            transcribed_text, sentiment_score = perform_sentiment_analysis(st.session_state.recorded_audio)
 
-        # Display results
-        if transcribed_text is not None and sentiment_score is not None:
-            st.write("### Transcribed Text")
-            st.write(transcribed_text)
+            # Display results
+            if transcribed_text is not None and sentiment_score is not None:
+                st.write("### Transcribed Text")
+                st.write(transcribed_text)
 
-            st.write("### Sentiment Score")
-            st.write(sentiment_score)
-        else:
-
-            st.error("Error occurred during transcription or sentiment analysis.")
+                st.write("### Sentiment Score")
+                st.write(sentiment_score)
+            else:
+                st.error("Error occurred during transcription or sentiment analysis.")
 
 if __name__ == "__main__":
     main()
