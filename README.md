@@ -17,6 +17,10 @@ This Python script demonstrates how to perform sentiment analysis on spoken text
     pip install PyAudio
 2. Run the provided Python script.
 
+## How to run
+- download voice_sentiment_streamlit file locally
+- open the terminal and run the command "stream run voice_sentiment_streamlit"
+
 ## Usage:
 1. Ensure that your microphone is properly connected and accessible in your environment.
 2. Run the script and speak into the microphone when prompted.
